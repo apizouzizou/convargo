@@ -71,7 +71,7 @@ var deliveries = [{
 //list of actors for payment
 //useful from exercise 5
 const actors = [{
-  'deliveryId': 'bba9500c-fd9e-453f-abf1-4cd8f52af377',
+  'rentalId': 'bba9500c-fd9e-453f-abf1-4cd8f52af377',
   'payment': [{
     'who': 'shipper',
     'type': 'debit',
@@ -127,11 +127,11 @@ const actors = [{
     'type': 'credit',
     'amount': 0
   }, {
-    'who': 'treasury',
+    'who':'insurance' ,
     'type': 'credit',
     'amount': 0
   }, {
-    'who': 'insurance',
+    'who': 'treasury',
     'type': 'credit',
     'amount': 0
   }, {
@@ -142,5 +142,57 @@ const actors = [{
 }];
 
 console.log(truckers);
+console.log(deliveries);
+console.log(actors);
+
+
+// STEP 5
+
+for (var i = 0; i < deliveries.length; i++) {
+
+  var pPK = 0;
+  var pPV =0;
+
+  for (var j = 0; j < truckers.length; j++) {
+   if (truckers[j].id === deliveries[i].truckerId) {
+     pPK = truckers[i].pricePerKm;
+     pPV = truckers[i].pricePerVolume;
+   }
+  }
+  if (deliveries[i].volume < 5){
+    deliveries[i].price= pPK*deliveries[i].distance + pPV*deliveries[i].volume;
+  }
+  if (deliveries[i].volume < 10 && deliveries[i].volume >= 5){
+    deliveries[i].price= (pPK*deliveries[i].distance + pPV*deliveries[i].volume)*0.90;
+  }
+  if (deliveries[i].volume < 25 && deliveries[i].volume >= 10){
+    deliveries[i].price= (pPK*deliveries[i].distance + pPV*deliveries[i].volume)*0.70;
+  }
+  if (deliveries[i].volume >= 25){
+    deliveries[i].price= (pPK*deliveries[i].distance + pPV*deliveries[i].volume)*0.50;
+  }
+
+var commission = deliveries[i].price*0.30;
+deliveries[i].commission.insurance = commission/2;
+deliveries[i].commission.treasury = Math.floor(deliveries[i].distance/500);
+deliveries[i].commission.convargo = commission - deliveries[i].commission.insurance - deliveries[i].commission.treasury;
+
+if (deliveries[i].options.deductibleReduction === true){
+  //deliveries[i].price = deliveries[i].price + deliveries[i].volume;
+  deliveries[i].price += deliveries[i].volume;
+}
+
+for (var j = 0; j < actors.length; j++){
+  if (actors[j].rentalId === deliveries[i].id){
+    actors[j].payment[0].amount = deliveries[i].price;
+    actors[j].payment[1].amount = deliveries[i].price *0.70;
+    actors[j].payment[2].amount = deliveries[i].commission.insurance;
+    actors[j].payment[3].amount = deliveries[i].commission.treasury;
+    actors[j].payment[4].amount = deliveries[i].commission.convargo;
+  }
+}
+
+
+}
 console.log(deliveries);
 console.log(actors);
